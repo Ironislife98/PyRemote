@@ -1,0 +1,9 @@
+What should I connect to?
+    run commands?
+    rdp?
+    take screenshot of screen and send it to email? or client?
+    RAT?
+
+Commands:
+    need to be logged in as admin
+
