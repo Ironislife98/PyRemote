@@ -3,6 +3,7 @@ What should I connect to?
     rdp?
     take screenshot of screen and send it to email? or client?
     RAT?
+key logging, screen and camera capture, file access, code execution, registry management, password sniffing etc.
 
 Commands:
     need to be logged in as admin
