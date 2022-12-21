@@ -36,8 +36,9 @@ class App(customtkinter.CTk):
     def __init__(self) -> None:
         super().__init__()
 
-        self.title = "PyRemote"
+        self.title("PyRemote")
         self.geometry(f"{1100}x{580}")
+        self.resizable(False, False)
 
         # configure grid layout (4x4)
         self.grid_columnconfigure(1, weight=1)
