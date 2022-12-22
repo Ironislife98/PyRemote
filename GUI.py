@@ -3,7 +3,9 @@ import customtkinter
 import json
 from typing import Callable
 from PIL import Image
-
+import io
+import time
+import os
 
 customtkinter.set_appearance_mode("dark")  # Modes: system (default), light, dark
 customtkinter.set_default_color_theme("blue")  # Themes: blue (default), dark-blue, green
@@ -77,7 +79,7 @@ class cameraFrame(Frame):
         self.configure(fg_color="transparent")
         self.capture = customtkinter.CTkImage(light_image=Image.open("images/placeholder.png"),
                                           dark_image=Image.open("images/placeholder.png"),
-                                          size=(400, 200))
+                                          size=(400, 300))
         self.captureContainerLabel = customtkinter.CTkLabel(self, image=self.capture, text="")
         self.captureContainerLabel.grid(row=0, column=0)
 
@@ -87,8 +89,10 @@ class cameraFrame(Frame):
 
 # Main Application Class
 class App(customtkinter.CTk):
-    def __init__(self) -> None:
+    def __init__(self, client) -> None:
         super().__init__()
+
+        self.client = client
 
         self.title("PyRemote")
         self.geometry(f"{1100}x{580}")
@@ -152,10 +156,20 @@ class App(customtkinter.CTk):
 
     # Placeholder funcs
     def takeScreenshot(self):
-        pass
+        self.client.screenshot()
+        bytesScreenshot = self.client.screenshot()
+        pilscreenshot = Image.open(io.BytesIO(bytesScreenshot))
+        try:
+            os.mkdir("Screenshots")
+        except FileExistsError:
+            print()
+        pilscreenshot.save(f"Screenshots/{time.strftime('%d-%m-%Y')}.png")
+        pilscreenshot = pilscreenshot.resize((400, 200))
+        self.ssFrame.screenshot.configure(dark_image=pilscreenshot, light_image=pilscreenshot)
 
     def takeCapture(self):
-        pass
+        self.client.capture()
+
 
 if __name__ == "__main__":
     app = App()

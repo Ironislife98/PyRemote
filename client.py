@@ -1,5 +1,6 @@
 import socket
 import sys
+import GUI
 
 HEADER = 64 
 PORT = 5000
@@ -20,15 +21,25 @@ class Client:
         msg_length += b" " * (HEADER - len(msg_length))
         self.conn.send(msg_length)
         self.conn.send(msg.encode(FORMAT))
-        print(self.conn.recv(1024))
+        if msg == DISCONNECTED_MESSAGE:
+            sys.exit()
 
     def disconnect(self):
         self.send(DISCONNECTED_MESSAGE)
-        self.conn.close()
-        sys.exit()
+
+    def screenshot(self):
+        self.send("screenshot")
+        recvheader = int(self.conn.recv(1024))
+        screenshot = self.conn.recv(recvheader)
+        return screenshot
+
+    def capture(self):
+        pass
 
 
 client = Client(ADDR)
-client.send("cmd dir")
+
+app = GUI.App(client)
+app.mainloop()
 
 client.disconnect()
