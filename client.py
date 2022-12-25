@@ -34,7 +34,11 @@ class Client:
         return screenshot
 
     def capture(self):
-        pass
+        self.send("capture")
+        recvheader = int(self.conn.recv(1024))
+        capture = self.conn.recv(recvheader)
+        return capture
+
 
 
 client = Client(ADDR)
