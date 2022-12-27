@@ -16,14 +16,6 @@ DEFAULT_SETTINGS = {"Command": {
 
 layouts = []
 
-try:
-    with open("settings.json") as f:
-        SETTINGS = json.load(f)
-except FileNotFoundError:
-    with open("settings.json", "w+") as f:
-        json.dump(DEFAULT_SETTINGS, f)
-        SETTINGS = DEFAULT_SETTINGS
-
 
 # Custom CTk Frames
 class Frame(customtkinter.CTkFrame):    # Just here to avoid repeating adding layouts
@@ -42,7 +34,7 @@ class commandFrame(Frame):
                                                  font=customtkinter.CTkFont(size=20, weight="bold"))
         self.frameTitle.grid(row=0, column=1, padx=(200, 0))
 
-        self.description = SETTINGS["Command"]["description"]
+        self.description = "This tool allows you to run commands on a remote server and see the output"
         self.descriptionLabel = customtkinter.CTkLabel(self, text=self.description, font=customtkinter.CTkFont(size=15))
         self.descriptionLabel.grid(row=1, column=1, padx=(200, 0))
 
