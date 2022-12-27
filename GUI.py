@@ -50,7 +50,8 @@ class commandFrame(Frame):
         self.outputBox.grid(row=2, column=1, sticky="nsew", padx=(20, 0))
         self.outputBox.insert("0.0", "No Output...")
 
-        self.commandEntry = customtkinter.CTkEntry(self, placeholder_text="Enter Command")
+        self.commandTextVariable = ""
+        self.commandEntry = customtkinter.CTkEntry(self, placeholder_text="Enter Command", textvariable=self.commandTextVariable)
         self.commandEntry.grid(row=3, column=0, columnspan=2, padx=(20, 0), pady=(20, 20), sticky="nsew")
 
         self.runCommandButton = customtkinter.CTkButton(master=self, text="Run Command", fg_color="transparent",
@@ -139,7 +140,10 @@ class App(customtkinter.CTk):
     # Going to start a new connection every time
     # One thread will remain open for other connection stuff
     def sendCommand(self):
-        pass
+        print(self.mainFrame.commandEntry.get())
+        output = self.client.command(cmd=self.mainFrame.commandEntry.get())
+        self.mainFrame.outputBox.configure(state="normal")
+        self.mainFrame.outputBox.insert("0.0", output)
 
     def switchLayoutCommand(self) -> None:
         self.clearLayout()

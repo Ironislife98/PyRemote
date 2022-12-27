@@ -16,6 +16,7 @@ class Client:
         self.conn.connect(address)
 
     def send(self, msg: str):
+        """Get Header Length so object is more easily decoded on server side, then send both header and msg"""
         msg_length = len(msg)
         msg_length = str(msg_length).encode(FORMAT)
         msg_length += b" " * (HEADER - len(msg_length))
@@ -25,12 +26,8 @@ class Client:
             sys.exit()
 
     def disconnect(self):
+        """Handle Clean Disconnect on server side"""
         self.send(DISCONNECTED_MESSAGE)
-
-    def sendCommand(self, command: str):
-        self.send(f"cmd {command}")
-        output = self.conn.recv(1024)
-        return output
 
     def screenshot(self):
         self.send("screenshot")
@@ -44,6 +41,14 @@ class Client:
         capture = self.conn.recv(recvheader)
         return capture
 
+    def command(self, cmd: str):
+        """Connects to server and runs command and returns output"""
+        self.send(f"cmd {cmd}")
+        header = self.conn.recv(HEADER).decode(FORMAT)
+        if header:
+            header = int(header)
+            output = self.conn.recv(header).decode(FORMAT)
+            return output
 
 
 client = Client(ADDR)
