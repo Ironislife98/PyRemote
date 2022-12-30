@@ -6,6 +6,8 @@ import io
 import time
 import os
 
+MAINFOLDER = "PyRemoteClient/"
+
 customtkinter.set_appearance_mode("dark")  # Modes: system (default), light, dark
 customtkinter.set_default_color_theme("blue")  # Themes: blue (default), dark-blue, green
 
@@ -51,9 +53,9 @@ class screenshotFrame(Frame):
     def __init__(self, *args, ontakeScreenshot: Callable, **kwargs):
         super().__init__(*args, **kwargs)
         self.configure(fg_color="transparent")
-        self.screenshot = customtkinter.CTkImage(light_image=Image.open("images/placeholder.png"),
-                                          dark_image=Image.open("images/placeholder.png"),
-                                          size=(400, 200))
+        self.screenshot = customtkinter.CTkImage(light_image=Image.open("PyRemoteClient/images/placeholder.png"),
+                                                 dark_image=Image.open("PyRemoteClient/images/placeholder.png"),
+                                                 size=(400, 200))
         self.screenshotContainerLabel = customtkinter.CTkLabel(self, image=self.screenshot, text="")
         self.screenshotContainerLabel.grid(row=0, column=0)
 
@@ -65,9 +67,9 @@ class cameraFrame(Frame):
     def __init__(self, *args, onCapture: Callable, **kwargs):
         super().__init__(*args, **kwargs)
         self.configure(fg_color="transparent")
-        self.capture = customtkinter.CTkImage(light_image=Image.open("images/placeholder.png"),
-                                          dark_image=Image.open("images/placeholder.png"),
-                                          size=(400, 200))
+        self.capture = customtkinter.CTkImage(light_image=Image.open("PyRemoteClient/images/placeholder.png"),
+                                              dark_image=Image.open("PyRemoteClient/images/placeholder.png"),
+                                              size=(400, 200))
         self.captureContainerLabel = customtkinter.CTkLabel(self, image=self.capture, text="")
         self.captureContainerLabel.grid(row=0, column=0)
 
@@ -187,16 +189,15 @@ class App(customtkinter.CTk):
         for layout in layouts:
             layout.grid_forget()
 
-    # Placeholder funcs
     def takeScreenshot(self):
         self.client.screenshot()
         bytesScreenshot = self.client.screenshot()
         pilscreenshot: Image = Image.open(io.BytesIO(bytesScreenshot))
         try:
-            os.mkdir("Screenshots")
+            os.mkdir(f"{MAINFOLDER}Screenshots")
         except FileExistsError:
             print()
-        pilscreenshot.save(f"Screenshots/{time.strftime('%d-%m-%Y')}.png")
+        pilscreenshot.save(f"{MAINFOLDER}Screenshots/{time.strftime('%d-%m-%Y')}.png")
         pilscreenshot = pilscreenshot.resize((400, 200))
         self.ssFrame.screenshot.configure(dark_image=pilscreenshot, light_image=pilscreenshot)
 
@@ -205,10 +206,10 @@ class App(customtkinter.CTk):
         bytesCapture = self.client.capture()
         pilCapture = Image.open(io.BytesIO(bytesCapture))
         try:
-            os.mkdir("Captures")
+            os.mkdir(f"{MAINFOLDER}Captures")
         except FileExistsError:
             print()
-        pilCapture.save(f"Captures/{time.strftime('%d-%m-%Y')}.png")
+        pilCapture.save(f"{MAINFOLDER}Captures/{time.strftime('%d-%m-%Y')}.png")
         pilCapture = pilCapture.resize((400, 200))
         self.cameraCaptureFrame.capture.configure(dark_image=pilCapture, light_image=pilCapture)
 

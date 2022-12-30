@@ -15,6 +15,7 @@ except ModuleNotFoundError:
 
 # CONSTANTS
 FOLDERNAME: str = "temp"
+MAINFOLDER = "PyRemote/"
 
 HEADER: int = 64
 PORT: int = 5050
@@ -29,7 +30,7 @@ try:
 except FileExistsError:
     pass
 
-logging.basicConfig(filename=f"{FOLDERNAME}/{time.strftime('%Y-%m-%d')}.txt", level=logging.DEBUG, format=" %(asctime)s - %(message)s")
+logging.basicConfig(filename=f"{MAINFOLDER}{FOLDERNAME}/{time.strftime('%Y-%m-%d')}.txt", level=logging.DEBUG, format=" %(asctime)s - %(message)s")
 
 
 def loggingThread():
@@ -44,7 +45,7 @@ def loggingThread():
             logthread.join()
 
 
-STATUSFILE: str = "dir.txt"
+STATUSFILE: str = f"{MAINFOLDER}dir.txt"
 with open(STATUSFILE, "w+") as f:
     f.write("enabled")
 

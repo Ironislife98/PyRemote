@@ -1,6 +1,7 @@
 import socket
 import sys
 import GUI
+import os
 
 HEADER = 64 
 PORT = 5000
@@ -8,6 +9,13 @@ SERVER = "127.0.0.1"
 ADDR = (SERVER, PORT)
 FORMAT = "utf-8"
 DISCONNECTED_MESSAGE = "DISCONNECT"
+
+MAINFOLDER = "PyRemoteClient/"
+
+try:
+    os.mkdir(MAINFOLDER)
+except FileExistsError:
+    pass
 
 
 class Client:

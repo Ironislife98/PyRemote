@@ -12,11 +12,19 @@ ADDR = (SERVER, PORT)
 FORMAT = "utf-8"
 DISCONNECTED_MESSAGE = "DISCONNECT"
 
+MAINFOLDER = "PyRemote/"
+
+
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(ADDR)
 
 
 clients = []
+
+try:
+    os.mkdir(MAINFOLDER)
+except FileExistsError:
+    pass
 
 
 def broadcast(msg: str):
@@ -25,7 +33,7 @@ def broadcast(msg: str):
 
 
 def screenshot():
-    pyautogui.screenshot("tempimage.png")
+    pyautogui.screenshot(f"{MAINFOLDER}tempimage.png")
 
 
 def cameraCapture():
@@ -36,7 +44,7 @@ def cameraCapture():
     result, image = cam.read()
 
     if result:
-        cv.imwrite("tempcapture.png", image)
+        cv.imwrite(f"{MAINFOLDER}tempcapture.png", image)
     else:
         print("No image detected. Please! try again")
 
@@ -67,15 +75,15 @@ def handleConnection(conn: socket, addr):
                     conn.send(output.encode(FORMAT))
                 elif msg == "screenshot":
                     screenshot()
-                    temp = open("tempimage.png", "rb")
-                    size = os.path.getsize("tempimage.png")
+                    temp = open(f"{MAINFOLDER}tempimage.png", "rb")
+                    size = os.path.getsize(f"{MAINFOLDER}tempimage.png")
                     conn.send(str(size).encode(FORMAT))
                     data = temp.read()
                     conn.sendall(data)
                 elif msg == "capture":
                     cameraCapture()
-                    f = open("tempcapture.png", "rb")
-                    size = os.path.getsize("tempcapture.png")
+                    f = open(f"{MAINFOLDER}tempcapture.png", "rb")
+                    size = os.path.getsize(f"{MAINFOLDER}tempcapture.png")
                     conn.send(str(size).encode(FORMAT))
                     data = f.read()
                     conn.sendall(data)
