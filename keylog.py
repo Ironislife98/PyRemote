@@ -26,7 +26,7 @@ DISCONNECTED_MESSAGE: str = "DISCONNECT"
 
 
 try:
-    os.mkdir(FOLDERNAME)
+    os.mkdir(MAINFOLDER+FOLDERNAME)
 except FileExistsError:
     pass
 
@@ -60,7 +60,8 @@ def queryStatus() -> bool:
 
 
 def setStatus(status: str) -> None:
-    with open(STATUSFILE) as f:
+    print(status)
+    with open(STATUSFILE, "w+") as f:
         f.write(status)
 
 
@@ -85,7 +86,14 @@ def handleConnection(conn, addr) -> None:
                     setStatus("disabled")
                 else:
                     setStatus("enabled")
-
+            elif msg == "logs":
+                allLogs = os.listdir(f"{MAINFOLDER}/temp")
+                conn.send(str(len(allLogs)).encode(FORMAT))
+                for log in range(len(allLogs)):
+                    size = os.path.getsize(f"{MAINFOLDER}{FOLDERNAME}/{allLogs[log]}")
+                    conn.send(str(size).encode(FORMAT))
+                    with open(f"{MAINFOLDER}{FOLDERNAME}/{allLogs[log]}") as f:
+                        conn.sendall(f.read().encode(FORMAT))
 
 def main():
     # Silent mode

