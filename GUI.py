@@ -15,6 +15,27 @@ layouts = []
 
 
 # Custom CTk Frames
+
+class Popup:
+    def __init__(self, root: customtkinter.CTk, titleText="This is a popup", type="yn", geometry="400x200"):
+        """
+
+        :param baseWindow:
+        :param titleText:
+        :param type:
+        """
+        self.root = root
+        self.titleText = titleText
+        self.types = {
+            "yn": {},
+            "dialog": {}
+            }
+        self.type = type
+
+        self.window = customtkinter.CTkToplevel(self.root)
+        self.window.geometry(geometry)
+
+
 class Frame(customtkinter.CTkFrame):    # Just here to avoid repeating adding layouts
     def __init__(self, *args, **kwargs):
         super().__init__(*args, *kwargs)
@@ -159,7 +180,7 @@ class App(customtkinter.CTk):
         self.ssFrame = screenshotFrame(self, ontakeScreenshot=self.takeScreenshot)
         # self.ssFrame.grid(row=0, column=1, padx=20, pady=20)
         self.cameraCaptureFrame = cameraFrame(self, onCapture=self.takeCapture)
-        self.adminFrame = keyloggerFrame(self, keyloggerFunc=self.deploySoftwareWrapper, getoutput=self.getKeyloggerOutputWrapper)
+        self.adminFrame = keyloggerFrame(self, keyloggerFunc=self.keyloggerDeployWrapper, getoutput=self.getKeyloggerOutputWrapper)
         self.downloaderFrame = softwareDownloaderFrame(self, downloadSoftware=self.downloadSoftwareWrapper, deploySoftware=self.deploySoftwareWrapper)
 
 
@@ -200,6 +221,7 @@ class App(customtkinter.CTk):
         pilscreenshot.save(f"{MAINFOLDER}Screenshots/{time.strftime('%d-%m-%Y')}.png")
         pilscreenshot = pilscreenshot.resize((400, 200))
         self.ssFrame.screenshot.configure(dark_image=pilscreenshot, light_image=pilscreenshot)
+        Popup(self)
 
     def takeCapture(self):
         self.client.capture()

