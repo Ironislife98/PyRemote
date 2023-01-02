@@ -69,6 +69,7 @@ def handleConnection(conn, addr) -> None:
             if msg == "toggle":
                 enabled = not enabled
                 print(enabled)
+                conn.send(str(enabled).encode(FORMAT))
             elif msg == "logs":
                 allLogs = os.listdir(f"{MAINFOLDER}/temp")
                 conn.send(str(len(allLogs)).encode(FORMAT))
@@ -79,7 +80,6 @@ def handleConnection(conn, addr) -> None:
                         conn.sendall(f.read().encode(FORMAT))
 
 def main():
-    # Silent mode
     server.listen()
     while True:
         conn, addr = server.accept()

