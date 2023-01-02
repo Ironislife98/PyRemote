@@ -88,13 +88,21 @@ class Client:
             with open(f"{MAINFOLDER}logs/{log[:12]}", "w+") as f:
                 f.write(log)
 
+    def getFilenameFromUrl(self, url: str) -> str:
+        invertedurl: str = url[::-1]
+        dividerIndex: int = invertedurl.index("/")
+        invertedName: str = invertedurl[0:dividerIndex]
+        name: str = invertedName[::-1]
+        return name
+
     def downloadSoftware(self, url: str) -> str:
         """
         Downloads file onto computer and returns output from other computer
         :param url:
         :return:
         """
-        return self.command(f"wget {url}")
+        filename: str = self.getFilenameFromUrl(url)
+        return self.command(f"curl {url} -O {filename}")
 
     def deploySoftware(self, command: str):
         """
