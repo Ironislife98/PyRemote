@@ -21,8 +21,7 @@ def Invoke(func: Callable, delay: float):
     start.start()
 
 
-# Custom CTk Frames
-
+# Popups Windows
 class Popups:
     @staticmethod
     def savedLogs(root: customtkinter.CTk, saveDirectory:str = "PyRemoteClient/logs", geometry: str ="450x200"):
@@ -44,6 +43,7 @@ class Popups:
         quitButton.grid(row=1, column=0, padx=20, pady=10)
 
 
+# Custom CTk Frames
 class Frame(customtkinter.CTkFrame):    # Just here to avoid repeating adding layouts
     def __init__(self, *args, **kwargs):
         super().__init__(*args, *kwargs)
@@ -198,6 +198,7 @@ class App(customtkinter.CTk):
         print(self.mainFrame.commandEntry.get())
         output = self.client.command(cmd=self.mainFrame.commandEntry.get())
         self.mainFrame.outputBox.configure(state="normal")
+        self.mainFrame.outputBox.delete('1.0', customtkinter.END)
         self.mainFrame.outputBox.insert("0.0", output)
 
     def switchLayoutCommand(self) -> None:
