@@ -131,6 +131,9 @@ dmypy.json
 
 Captures/
 Screenshots/
-images/
+PyRemoteClient/
+PyRemote/
 tempimage.png
 tempcapture.png
+ComplexExample.py
+.idea/

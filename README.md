@@ -1,3 +1,4 @@
 # PyRemote
-A python RAT that can run on a users computer, with their permission.
-This tool is not designed with malicous intenr and should not be used in such way.
+A Remote Access Tool built using python and the socket module. PyRemote uses a host computer
+and a remote computer. The host computer runs a script that exposes the PC to the internet, 
+for the remote PC to connect to, and every tool is run locally.

