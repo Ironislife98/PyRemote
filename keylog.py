@@ -83,5 +83,5 @@ def main():
     server.listen()
     while True:
         conn, addr = server.accept()
-        thread = threading.Thread(target=handleConnection, args=(conn, addr))
+        thread: threading.Thread = threading.Thread(target=handleConnection, args=(conn, addr))
         thread.start()
