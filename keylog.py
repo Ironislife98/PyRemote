@@ -18,7 +18,7 @@ FOLDERNAME: str = "temp"
 MAINFOLDER = "PyRemote/"
 
 HEADER: int = 64
-PORT: int = 5050
+PORT: int = 8000
 SERVER: str = "127.0.0.1"
 ADDR: tuple[str, int] = (SERVER, PORT)
 FORMAT: str = "utf-8"
@@ -83,9 +83,5 @@ def main():
     server.listen()
     while True:
         conn, addr = server.accept()
-        thread = threading.Thread(target=handleConnection, args=(conn, addr))
+        thread: threading.Thread = threading.Thread(target=handleConnection, args=(conn, addr))
         thread.start()
-
-
-if __name__ == "__main__":
-    main()

