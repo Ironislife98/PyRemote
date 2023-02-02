@@ -3,6 +3,8 @@ import sys
 import GUI
 import os
 import pickle
+import rsa
+
 
 HEADER = 64 
 PORT = 5000
@@ -12,6 +14,7 @@ FORMAT = "utf-8"
 DISCONNECTED_MESSAGE = "DISCONNECT"
 
 MAINFOLDER = "PyRemoteClient/"
+
 
 try:
     os.mkdir(MAINFOLDER)
@@ -29,14 +32,15 @@ class Client:
         self.conn.connect(address)
 
     def send(self, msg: str):
-        """Get Header Length so object is more easily decoded on server side, then send both header and msg"""
-        msg_length = len(msg)
-        msg_length = str(msg_length).encode(FORMAT)
-        msg_length += b" " * (HEADER - len(msg_length))
-        self.conn.send(msg_length)
-        self.conn.send(msg.encode(FORMAT))
-        if msg == DISCONNECTED_MESSAGE:
-            sys.exit()
+        """Sends a message to server using encryption if keys have been exchanged"""
+        if not self.encrypt:
+            msg_length = len(msg)
+            msg_length = str(msg_length).encode(FORMAT)
+            msg_length += b" " * (HEADER - len(msg_length))
+            self.conn.send(msg_length)
+            self.conn.send(msg.encode(FORMAT))
+            if msg == DISCONNECTED_MESSAGE:
+                sys.exit()
 
     def disconnect(self):
         """Handle Clean Disconnect on server side"""
