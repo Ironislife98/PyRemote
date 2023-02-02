@@ -3,8 +3,6 @@ import sys
 import GUI
 import os
 import pickle
-import rsa
-
 
 HEADER = 64 
 PORT = 5000

@@ -108,9 +108,6 @@ def toggleLogger() -> bytes:
     status: bytes = conn.recv(1024)
     return status
 
-def send():
-    pass
-
 
 def handleConnection(conn: socket, addr):
     global numConnected

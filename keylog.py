@@ -3,7 +3,6 @@ import os
 import time
 import threading
 import socket
-import sys
 
 try:
     from pynput.keyboard import Key, Listener
